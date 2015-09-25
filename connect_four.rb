@@ -50,18 +50,18 @@ class GameBoard
 		player_tokens = @board.find_all {|cell| cell.value == "[#{player.symbol}]"}
 		until @win == true || player_tokens.empty?
 			current_cell = player_tokens.pop
-			check_wins(player, current_cell.left) if current_cell.left != nil
-			check_wins(player, current_cell.right) if current_cell.right != nil
-			check_wins(player, current_cell.up) if current_cell.up != nil
-			check_wins(player, current_cell.up_left) if current_cell.up_left != nil
-			check_wins(player, current_cell.up_right) if current_cell.up_right != nil
+			check_connected_cells(player, current_cell.left) if current_cell.left != nil
+			check_connected_cells(player, current_cell.right) if current_cell.right != nil
+			check_connected_cells(player, current_cell.up) if current_cell.up != nil
+			check_connected_cells(player, current_cell.up_left) if current_cell.up_left != nil
+			check_connected_cells(player, current_cell.up_right) if current_cell.up_right != nil
 		end
 		if @win == true
 			puts "#{player.symbol} wins the game!"
 		end
 	end
 
-	def check_wins(player, cell_position)
+	def check_connected_cells(player, cell_position)
 		cell_position -= 1
 		@win = true if @board[cell_position].value == "[#{player.symbol}]" &&
 		@board[cell_position - @board_size].value == "[#{player.symbol}]" &&
