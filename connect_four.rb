@@ -1,4 +1,4 @@
-class Board
+class GameBoard
 	attr_reader :board
 	def initialize(params = {})
 		@board_size = params[:board_size]
@@ -9,18 +9,30 @@ class Board
 	end
 
 	def create_cells
-		row = 1
-		@board_size.times do
-			col = 1
-			diag_l = row
-			diag_r = (@board_size - row) + 1
-			@board_size.times do
-				@board << Cell.new({col: col, row: row, diag_r: diag_r, diag_l: diag_l})
-				col += 1
-				diag_l += 1
-				diag_r += 1
-			end
-			row += 1
+		position = 1
+		column_counter = 1
+		full_size = @board_size**2
+		(full_size).times do
+			position - @board_size > 0 ? up = position - @board_size : up = nil
+			position - 1 > 0 && column_counter != 1 ? left = position - 1 : left = nil
+			position + 1 < full_size && column_counter != @board_size ? right = position + 1 : right = nil
+			up && up - 1 > 0 && column_counter != 1 ? up_left = up - 1 : up_left = nil
+			up && up + 1 > 0 && column_counter != @board_size ? up_right = up + 1 : up_right = nil
+			@board << Cell.new({
+				position: position,
+				col: column_counter,
+				up: up, 
+				down: down, 
+				left: left, 
+				right: right,
+				up_left: up_left,
+				up_right: up_right,
+				down_left: down_left,
+				down_right: down_right
+				})
+			position += 1
+			column_counter += 1
+			column_counter = 1 if column_counter > @board_size
 		end
 	end
 
@@ -35,68 +47,25 @@ class Board
 	end
 
 	def check_for_wins(player)
-		@board.each do |cell|
-			check_row_wins(cell, player)
-			check_column_wins(cell, player)
-			check_diag_left_wins(cell, player)
-			check_diag_right_wins(cell, player)
+		player_tokens = @board.find_all {|cell| cell.value == "[#{player.symbol}]"}
+		until @win == true || player_tokens.empty?
+			current_cell = player_tokens.pop
+			check_connected_cells(player, current_cell.left) if current_cell.left != nil
+			check_connected_cells(player, current_cell.right) if current_cell.right != nil
+			check_connected_cells(player, current_cell.up) if current_cell.up != nil
+			check_connected_cells(player, current_cell.up_left) if current_cell.up_left != nil
+			check_connected_cells(player, current_cell.up_right) if current_cell.up_right != nil
 		end
-		p @win
 		if @win == true
 			puts "#{player.symbol} wins the game!"
 		end
 	end
 
-	def check_row_wins(cell, player)
-		row_num = cell.row
-		row = @board.find_all {|cell| cell.row == row_num }
-		i = 0
-		(@board_size - @win_size + 1).times do
-			end_point = (@win_size + i) - 1
-			cluster = row[i..end_point]
-			@win = true if cluster.all? {|cell| cell.value == "[#{player.symbol}]"}
-			i += 1
-		end
-	end
-
-	def check_column_wins(cell, player)
-		col_num = cell.col
-		column = @board.find_all {|cell| cell.col == col_num }
-		i = 0
-		(@board_size - @win_size + 1).times do
-			end_point = (@win_size + i) - 1
-			cluster = column[i..end_point]
-			@win = true if cluster.all? {|cell| cell.value == "[#{player.symbol}]"}
-			i += 1
-		end
-	end
-
-	def check_diag_left_wins(cell, player)
-		diag_l_num = cell.diag_l
-		diag_l = @board.find_all {|cell| cell.diag_l == diag_l_num }
-		i = 0
-		(@board_size - @win_size + 1).times do
-			end_point = (@win_size + i) - 1
-			cluster = diag_l[i..end_point]
-			if cluster
-				@win = true if cluster.all? {|cell| cell.value == "[#{player.symbol}]"} && cluster.length == @win_size
-			end
-			i += 1
-		end
-	end
-
-	def check_diag_right_wins(cell, player)
-		diag_r_num = cell.diag_r
-		diag_r = @board.find_all {|cell| cell.diag_r == diag_r_num }
-		i = 0
-		(@board_size - @win_size + 1).times do
-			end_point = (@win_size + i) - 1
-			cluster = diag_r[i..end_point]
-			if cluster
-				@win = true if cluster.all? {|cell| cell.value == "[#{player.symbol}]"} && cluster.length == @win_size
-			end
-			i += 1
-		end
+	def check_connected_cells(player, cell_position)
+		cell_position -= 1
+		@win = true if @board[cell_position].value == "[#{player.symbol}]" &&
+		@board[cell_position - @board_size].value == "[#{player.symbol}]" &&
+		@board[cell_position - 2*@board_size].value == "[#{player.symbol}]"
 	end
 
 	def print_board
@@ -115,15 +84,18 @@ class Board
 	end
 end
 
-
 class Cell
-	attr_reader :row, :col, :diag_r, :diag_l
+	attr_reader :position, :col, :up, :left, :right, 
+							:up_left, :up_right
 	attr_accessor :value
 	def initialize(params = {})
-		@row = params[:row]
+		@position = params[:position]
 		@col = params[:col]
-		@diag_r = params[:diag_r]
-		@diag_l = params[:diag_l]
+		@up = params[:up]
+		@left = params[:left]
+		@right = params[:right]
+		@up_left = params[:up_left]
+		@up_right = params[:up_right]
 		@value = "[ ]"
 	end
 end
@@ -135,15 +107,72 @@ class Player
 	end
 end
 
+# class View
+# 	attr_reader :info
+# 	def initialize
+# 		@info = {}
+# 	end
+
+# 	def intro
+# 		puts "Welcome to Connect 4!"
+
+# 		board_size = 3
+# 		while board_size.is_a? Integer
+# 			puts "Please enter a board size: "
+# 			board_size = gets.chomp
+# 			if board_size.to_i <= 0
+# 				puts "Quit trying to break me :'("
+# 			end
+# 		end
+# 		info[:board_size] = board_size
+
+# 		win_size = 1
+# 		while win_size.to_i < board_size.to_i
+# 			puts "Please enter a win streak size: "
+# 			win_size = gets.chomp
+# 			p win_size
+# 			if win_size.to_i >= board_size.to_i
+# 				puts "Quit trying to break me :'("
+# 			end
+# 		end
+# 		info[:win_size] = win_size.to_s
+
+# 		player_one_symbol = "A"
+# 		while player_one_symbol.length == 1
+# 			puts "Please enter Player One's 1 character symbol: "
+# 			player_one_symbol = gets.chomp
+# 			if player_one_symbol.length != 1
+# 				puts "Quit trying to break me :'("
+# 			end
+# 		end
+# 		info[:player_one_symbol] = player_one_symbol
+
+# 		player_two_symbol = "B"
+# 		while player_two_symbol.length == 1
+# 			puts "Please enter Player Two's 1 character symbol: "
+# 			player_two_symbol = gets.chomp
+# 			if player_two_symbol.length != 1
+# 				puts "Quit trying to break me :'("
+# 			end
+# 		end
+# 		info[:player_two_symbol] = player_two_symbol
+
+# 	end
+# end
+
+# view = View.new
+# view.intro
+
 player_one = Player.new({symbol: "J"})
 player_two = Player.new({symbol: "S"})
-game_board = Board.new({board_size: 7, win_size: 4})
+game_board = GameBoard.new({board_size: 7, win_size: 4})
 game_board.create_cells
-game_board.board.each do |row|
-	p row
+game_board.board.each do |cell|
+	p cell
 	puts
 end
 
+game_board.print_board
 game_board.player_move(player_one, 1)
 game_board.print_board
 game_board.player_move(player_one, 1)
