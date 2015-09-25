@@ -22,13 +22,10 @@ class GameBoard
 				position: position,
 				col: column_counter,
 				up: up, 
-				down: down, 
 				left: left, 
 				right: right,
 				up_left: up_left,
-				up_right: up_right,
-				down_left: down_left,
-				down_right: down_right
+				up_right: up_right
 				})
 			position += 1
 			column_counter += 1
@@ -107,70 +104,10 @@ class Player
 	end
 end
 
-# class View
-# 	attr_reader :info
-# 	def initialize
-# 		@info = {}
-# 	end
-
-# 	def intro
-# 		puts "Welcome to Connect 4!"
-
-# 		board_size = 3
-# 		while board_size.is_a? Integer
-# 			puts "Please enter a board size: "
-# 			board_size = gets.chomp
-# 			if board_size.to_i <= 0
-# 				puts "Quit trying to break me :'("
-# 			end
-# 		end
-# 		info[:board_size] = board_size
-
-# 		win_size = 1
-# 		while win_size.to_i < board_size.to_i
-# 			puts "Please enter a win streak size: "
-# 			win_size = gets.chomp
-# 			p win_size
-# 			if win_size.to_i >= board_size.to_i
-# 				puts "Quit trying to break me :'("
-# 			end
-# 		end
-# 		info[:win_size] = win_size.to_s
-
-# 		player_one_symbol = "A"
-# 		while player_one_symbol.length == 1
-# 			puts "Please enter Player One's 1 character symbol: "
-# 			player_one_symbol = gets.chomp
-# 			if player_one_symbol.length != 1
-# 				puts "Quit trying to break me :'("
-# 			end
-# 		end
-# 		info[:player_one_symbol] = player_one_symbol
-
-# 		player_two_symbol = "B"
-# 		while player_two_symbol.length == 1
-# 			puts "Please enter Player Two's 1 character symbol: "
-# 			player_two_symbol = gets.chomp
-# 			if player_two_symbol.length != 1
-# 				puts "Quit trying to break me :'("
-# 			end
-# 		end
-# 		info[:player_two_symbol] = player_two_symbol
-
-# 	end
-# end
-
-# view = View.new
-# view.intro
-
 player_one = Player.new({symbol: "J"})
 player_two = Player.new({symbol: "S"})
 game_board = GameBoard.new({board_size: 7, win_size: 4})
 game_board.create_cells
-game_board.board.each do |cell|
-	p cell
-	puts
-end
 
 game_board.print_board
 game_board.player_move(player_one, 1)
