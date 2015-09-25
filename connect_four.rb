@@ -47,22 +47,50 @@ class GameBoard
 		player_tokens = @board.find_all {|cell| cell.value == "[#{player.symbol}]"}
 		until @win == true || player_tokens.empty?
 			current_cell = player_tokens.pop
-			check_connected_cells(player, current_cell.left) if current_cell.left != nil
-			check_connected_cells(player, current_cell.right) if current_cell.right != nil
-			check_connected_cells(player, current_cell.up) if current_cell.up != nil
-			check_connected_cells(player, current_cell.up_left) if current_cell.up_left != nil
-			check_connected_cells(player, current_cell.up_right) if current_cell.up_right != nil
+			check_left_cells(player, current_cell.left) if current_cell.left != nil
+			check_right_cells(player, current_cell.right) if current_cell.right != nil
+			check_up_cells(player, current_cell.up) if current_cell.up != nil
+			check_up_cells(player, current_cell.up_left) if current_cell.up_left != nil
+			check_up_cells(player, current_cell.up_right) if current_cell.up_right != nil
 		end
 		if @win == true
 			puts "#{player.symbol} wins the game!"
 		end
 	end
 
-	def check_connected_cells(player, cell_position)
+	def check_up_cells(player, cell_position)
 		cell_position -= 1
-		@win = true if @board[cell_position].value == "[#{player.symbol}]" &&
-		@board[cell_position - @board_size].value == "[#{player.symbol}]" &&
-		@board[cell_position - 2*@board_size].value == "[#{player.symbol}]"
+		multiplier = 0
+		counter = 1
+		(@win_size - 1).times do 
+			counter += 1 if @board[cell_position - @board_size * multiplier].value == "[#{player.symbol}]"
+			multiplier += 1
+		end
+		@win = true if counter == @win_size
+	end
+
+	def check_left_cells(player, cell_position)
+		cell_position -= 1
+		next_position = 0
+		counter = 1
+		(@win_size - 1).times do 
+			cell = @board[cell_position - next_position]
+			counter += 1 if cell.value == "[#{player.symbol}]" && cell.left
+			next_position += 1
+		end
+		@win = true if counter == @win_size
+	end
+
+	def check_right_cells(player, cell_position)
+		cell_position -= 1
+		next_position = 0
+		counter = 1
+		(@win_size - 1).times do 
+			cell = @board[cell_position + next_position]
+			counter += 1 if cell.value == "[#{player.symbol}]" && cell.right
+			next_position += 1
+		end
+		@win = true if counter == @win_size
 	end
 
 	def print_board
@@ -79,6 +107,20 @@ class GameBoard
 			puts
 		end
 	end
+
+	# def play
+	# 	while @win == false
+	# 		determine_first_move == 0 ? puts "Player One goes first!" : puts "Player Two goes first!"
+	# 		puts
+	# 		puts "Which column would you like to put your token?"
+	# 		player_choice = gets.chomp
+	# 		self.print_board
+
+	# 		if @win == true
+	# 			puts "#{player.symbol} wins the game!"
+	# 		end
+	# 	end
+	# end
 end
 
 class Cell
@@ -104,18 +146,75 @@ class Player
 	end
 end
 
-player_one = Player.new({symbol: "J"})
-player_two = Player.new({symbol: "S"})
-game_board = GameBoard.new({board_size: 7, win_size: 4})
+
+class View
+	attr_reader :info
+	def initialize
+		@info = {}
+	end
+
+	def intro
+		puts "Welcome to Connect 4!"
+
+		board_size = 0
+		until (board_size.is_a? Integer) && board_size > 0
+			puts "Please enter a board size: "
+			board_size = gets.chomp
+			board_size = board_size.to_i
+			if board_size <= 0
+				puts "Quit trying to break me :'("
+			end
+		end
+		info[:board_size] = board_size
+
+		win_size = board_size + 1
+		until win_size < board_size
+			puts "Please enter a win streak size: "
+			win_size = gets.chomp
+			win_size = win_size.to_i
+			if win_size >= board_size
+				puts "Quit trying to break me :'("
+			end
+		end
+		info[:win_size] = win_size
+
+		player_one_symbol = "AA"
+		until player_one_symbol.length == 1
+			puts "Please enter Player One's 1 character symbol: "
+			player_one_symbol = gets.chomp
+			if player_one_symbol.length != 1
+				puts "Quit trying to break me :'("
+			end
+		end
+		info[:player_one_symbol] = player_one_symbol
+
+		player_two_symbol = "BB"
+		until player_two_symbol.length == 1
+			puts "Please enter Player Two's 1 character symbol: "
+			player_two_symbol = gets.chomp
+			if player_two_symbol.length != 1
+				puts "Quit trying to break me :'("
+			end
+		end
+		info[:player_two_symbol] = player_two_symbol
+	end
+end
+
+view = View.new
+view.intro
+
+player_one = Player.new({symbol: view.info[:player_one_symbol]})
+player_two = Player.new({symbol: view.info[:player_two_symbol]})
+game_board = GameBoard.new({board_size: view.info[:board_size], win_size: view.info[:win_size]})
 game_board.create_cells
 
 game_board.print_board
 game_board.player_move(player_one, 1)
 game_board.print_board
-game_board.player_move(player_one, 1)
+game_board.player_move(player_one, 2)
 game_board.print_board
-game_board.player_move(player_one, 1)
+game_board.player_move(player_one, 3)
 game_board.print_board
-game_board.player_move(player_one, 1)
+game_board.player_move(player_one, 4)
 game_board.print_board
 
