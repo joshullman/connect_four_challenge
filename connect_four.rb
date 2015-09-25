@@ -5,6 +5,7 @@ class Board
 		@win_size = params[:win_size]
 		@board = []
 		@number_of_moves = 0
+		@win = false
 	end
 
 	def create_cells
@@ -27,20 +28,22 @@ class Board
 		coin_toss = rand(2)
 	end
 
-	def player_move(y_cord, player)
-
+	def player_move(player, col)
+		last_cell = @board.find_all {|cell| cell.col == col && cell.value == "[ ]"}.last
+		last_cell.value = "[#{player.symbol}]"
+		check_for_wins(player)
 	end
 
 	def check_for_wins(player)
-		@win = false
 		@board.each do |cell|
-			check_horiz_wins(cell, player)
-			check_vert_wins(cell, player)
+			check_row_wins(cell, player)
+			check_column_wins(cell, player)
 			check_diag_left_wins(cell, player)
 			check_diag_right_wins(cell, player)
 		end
+		p @win
 		if @win == true
-			puts "#{player.name} + wins the game!"
+			puts "#{player.symbol} wins the game!"
 		end
 	end
 
@@ -48,9 +51,11 @@ class Board
 		row_num = cell.row
 		row = @board.find_all {|cell| cell.row == row_num }
 		i = 0
-		(@board_size - @win_size).times do
+		(@board_size - @win_size + 1).times do
 			end_point = (@win_size + i) - 1
-			@win = true if row[i..end_point].all? {|cell| cell.value == player.symbol}
+			cluster = row[i..end_point]
+			@win = true if cluster.all? {|cell| cell.value == "[#{player.symbol}]"}
+			i += 1
 		end
 	end
 
@@ -58,20 +63,55 @@ class Board
 		col_num = cell.col
 		column = @board.find_all {|cell| cell.col == col_num }
 		i = 0
-		(@board_size - @win_size).times do
+		(@board_size - @win_size + 1).times do
 			end_point = (@win_size + i) - 1
-			@win = true if column[i..end_point].all? {|cell| cell.value == player.symbol}
+			cluster = column[i..end_point]
+			@win = true if cluster.all? {|cell| cell.value == "[#{player.symbol}]"}
+			i += 1
 		end
 	end
 
 	def check_diag_left_wins(cell, player)
-		counter = 0
-		@win = true if counter == @win_size
+		diag_l_num = cell.diag_l
+		diag_l = @board.find_all {|cell| cell.diag_l == diag_l_num }
+		i = 0
+		(@board_size - @win_size + 1).times do
+			end_point = (@win_size + i) - 1
+			cluster = diag_l[i..end_point]
+			if cluster
+				@win = true if cluster.all? {|cell| cell.value == "[#{player.symbol}]"} && cluster.length == @win_size
+			end
+			i += 1
+		end
 	end
 
 	def check_diag_right_wins(cell, player)
-		counter = 0
-		@win = true if counter == @win_size
+		diag_r_num = cell.diag_r
+		diag_r = @board.find_all {|cell| cell.diag_r == diag_r_num }
+		i = 0
+		(@board_size - @win_size + 1).times do
+			end_point = (@win_size + i) - 1
+			cluster = diag_r[i..end_point]
+			if cluster
+				@win = true if cluster.all? {|cell| cell.value == "[#{player.symbol}]"} && cluster.length == @win_size
+			end
+			i += 1
+		end
+	end
+
+	def print_board
+		num = 1
+		@board_size.times do 
+			print "  #{num}  "
+			num += 1
+		end
+		puts
+		@board.each_slice(@board_size).each do |row|
+			row.each do |cell|
+				print " #{cell.value} "
+			end
+			puts
+		end
 	end
 end
 
@@ -89,21 +129,27 @@ class Cell
 end
 
 class Player
-	attr_reader :name, :symbol
+	attr_reader :symbol
 	def initialize(params = {})
-		@name = params[:name]
 		@symbol = params[:symbol]
 	end
 end
 
-player_one = Player.new({name: "Jimmy", symbol: "J"})
-player_two = Player.new({name: "Susan", symbol: "S"})
-board = Board.new({board_size: 7, win_size: 4})
-board.create_cells
-board.board.each do |row|
+player_one = Player.new({symbol: "J"})
+player_two = Player.new({symbol: "S"})
+game_board = Board.new({board_size: 7, win_size: 4})
+game_board.create_cells
+game_board.board.each do |row|
 	p row
 	puts
 end
 
-p board.check_for_wins(player_one)
+game_board.player_move(player_one, 1)
+game_board.print_board
+game_board.player_move(player_one, 1)
+game_board.print_board
+game_board.player_move(player_one, 1)
+game_board.print_board
+game_board.player_move(player_one, 1)
+game_board.print_board
 
