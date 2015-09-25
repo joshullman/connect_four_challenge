@@ -12,7 +12,7 @@ class Board
 		@board_size.times do
 			col = 1
 			diag_l = row
-			diag_r = (@board_size + 1) - row
+			diag_r = (@board_size - row) + 1
 			@board_size.times do
 				@board << Cell.new({col: col, row: row, diag_r: diag_r, diag_l: diag_l})
 				col += 1
@@ -31,60 +31,53 @@ class Board
 
 	end
 
-	def check_for_wins
+	def check_for_wins(player)
 		@win = false
-		flipped_board = @board.reverse
-		p flipped_board
-		flipped_board.each do |cell|
-			check_horiz_wins(cell)
-			if !flipped_board[@board_size - @win_size].all? {|cell| cell.value. == "[ ]" }
-				check_vert_wins(cell)
-				check_diag_left_wins(cell)
-				check_diag_right_wins(cell)
-			end
+		@board.each do |cell|
+			check_horiz_wins(cell, player)
+			check_vert_wins(cell, player)
+			check_diag_left_wins(cell, player)
+			check_diag_right_wins(cell, player)
 		end
 		if @win == true
-		else
+			puts "#{player.name} + wins the game!"
 		end
 	end
 
-	def determine_column(cell)
-		@column_reference[cell.y_position]
+	def check_row_wins(cell, player)
+		row_num = cell.row
+		row = @board.find_all {|cell| cell.row == row_num }
+		i = 0
+		(@board_size - @win_size).times do
+			end_point = (@win_size + i) - 1
+			@win = true if row[i..end_point].all? {|cell| cell.value == player.symbol}
+		end
 	end
 
-	def check_horiz_wins(cell)
-		counter = 0
+	def check_column_wins(cell, player)
+		col_num = cell.col
+		column = @board.find_all {|cell| cell.col == col_num }
+		i = 0
+		(@board_size - @win_size).times do
+			end_point = (@win_size + i) - 1
+			@win = true if column[i..end_point].all? {|cell| cell.value == player.symbol}
+		end
+	end
 
-		@board[determine_column(cell) - 1]
+	def check_diag_left_wins(cell, player)
+		counter = 0
 		@win = true if counter == @win_size
 	end
 
-	def check_vert_wins(cell)
-		counter = 0
-		@win = true if counter == @win_size
-	end
-
-	def check_diag_left_wins(cell)
-		counter = 0
-		@win = true if counter == @win_size
-	end
-
-	def check_diag_right_wins(cell)
+	def check_diag_right_wins(cell, player)
 		counter = 0
 		@win = true if counter == @win_size
 	end
 end
 
-# class Cell
-# 	attr_accessor :value
-# 	def initialize(params = {})
-# 		@x_position = params[:x_position]
-# 		@y_position = params[:y_position]
-# 		@value = "[ ]"
-# 	end
-# end
 
 class Cell
+	attr_reader :row, :col, :diag_r, :diag_l
 	attr_accessor :value
 	def initialize(params = {})
 		@row = params[:row]
@@ -103,8 +96,8 @@ class Player
 	end
 end
 
-# player_one = Player.new({name: , symbol: })
-# player_two = Player.new({name: , symbol: })
+player_one = Player.new({name: "Jimmy", symbol: "J"})
+player_two = Player.new({name: "Susan", symbol: "S"})
 board = Board.new({board_size: 7, win_size: 4})
 board.create_cells
 board.board.each do |row|
@@ -112,5 +105,5 @@ board.board.each do |row|
 	puts
 end
 
-# p board.check_for_wins
+p board.check_for_wins(player_one)
 
