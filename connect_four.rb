@@ -48,7 +48,6 @@ class GameBoard
 		until @win == true || player_tokens.empty?
 			current_cell = player_tokens.pop
 			check_left_cells(player, current_cell.left) if current_cell.left != nil
-			check_right_cells(player, current_cell.right) if current_cell.right != nil
 			check_up_cells(player, current_cell.up) if current_cell.up != nil
 			check_up_cells(player, current_cell.up_left) if current_cell.up_left != nil
 			check_up_cells(player, current_cell.up_right) if current_cell.up_right != nil
@@ -75,18 +74,6 @@ class GameBoard
 		counter = 1
 		(@win_size - 1).times do 
 			cell = @board[cell_position - next_position]
-			counter += 1 if cell.value == "[#{player.symbol}]" && cell.left
-			next_position += 1
-		end
-		@win = true if counter == @win_size
-	end
-
-	def check_right_cells(player, cell_position)
-		cell_position -= 1
-		next_position = 0
-		counter = 1
-		(@win_size - 1).times do 
-			cell = @board[cell_position + next_position]
 			counter += 1 if cell.value == "[#{player.symbol}]" && cell.right
 			next_position += 1
 		end
