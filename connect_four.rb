@@ -60,9 +60,13 @@ class GameBoard
 
 	def check_connected_cells(player, cell_position)
 		cell_position -= 1
-		@win = true if @board[cell_position].value == "[#{player.symbol}]" &&
-		@board[cell_position - @board_size].value == "[#{player.symbol}]" &&
-		@board[cell_position - 2*@board_size].value == "[#{player.symbol}]"
+		multiplier = 0
+		counter = 1
+		(@win_size - 1).times do 
+			counter += 1 if @board[cell_position - @board_size * multiplier].value == "[#{player.symbol}]"
+			multiplier += 1
+		end
+		@win = true if counter == @win_size
 	end
 
 	def print_board
@@ -103,6 +107,63 @@ class Player
 		@symbol = params[:symbol]
 	end
 end
+
+
+# class View
+# 	attr_reader :info
+# 	def initialize
+# 		@info = {}
+# 	end
+
+# 	def intro
+# 		puts "Welcome to Connect 4!"
+
+# 		board_size = 3
+# 		while board_size.is_a? Integer
+# 			puts "Please enter a board size: "
+# 			board_size = gets.chomp
+# 			if board_size.to_i <= 0
+# 				puts "Quit trying to break me :'("
+# 			end
+# 		end
+# 		info[:board_size] = board_size
+
+# 		win_size = 1
+# 		while win_size.to_i < board_size.to_i
+# 			puts "Please enter a win streak size: "
+# 			win_size = gets.chomp
+# 			p win_size
+# 			if win_size.to_i >= board_size.to_i
+# 				puts "Quit trying to break me :'("
+# 			end
+# 		end
+# 		info[:win_size] = win_size.to_s
+
+# 		player_one_symbol = "A"
+# 		while player_one_symbol.length == 1
+# 			puts "Please enter Player One's 1 character symbol: "
+# 			player_one_symbol = gets.chomp
+# 			if player_one_symbol.length != 1
+# 				puts "Quit trying to break me :'("
+# 			end
+# 		end
+# 		info[:player_one_symbol] = player_one_symbol
+
+# 		player_two_symbol = "B"
+# 		while player_two_symbol.length == 1
+# 			puts "Please enter Player Two's 1 character symbol: "
+# 			player_two_symbol = gets.chomp
+# 			if player_two_symbol.length != 1
+# 				puts "Quit trying to break me :'("
+# 			end
+# 		end
+# 		info[:player_two_symbol] = player_two_symbol
+
+# 	end
+# end
+
+# view = View.new
+# view.intro
 
 player_one = Player.new({symbol: "J"})
 player_two = Player.new({symbol: "S"})
