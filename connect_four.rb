@@ -8,28 +8,18 @@ class Board
 	end
 
 	def create_cells
-		y_position = 1
+		row = 1
 		@board_size.times do
-			x_position = "A"
-			row = []
+			col = 1
+			diag_l = row
+			diag_r = (@board_size + 1) - row
 			@board_size.times do
-				row << Cell.new({x_position: x_position, y_position: y_position})
-				x_position = x_position.next
+				@board << Cell.new({col: col, row: row, diag_r: diag_r, diag_l: diag_l})
+				col += 1
+				diag_l += 1
+				diag_r += 1
 			end
-			@board << row
-			y_position += 1
-		end
-		create_column_reference
-	end
-
-	def create_column_reference
-		@column_reference = {}
-		y = "A"
-		y_num = 1
-		@board_size.times do 
-			@column_reference[y] = y_num
-			y = y.next
-			y_num += 1
+			row += 1
 		end
 	end
 
@@ -64,7 +54,7 @@ class Board
 
 	def check_horiz_wins(cell)
 		counter = 0
-		
+
 		@board[determine_column(cell) - 1]
 		@win = true if counter == @win_size
 	end
@@ -85,11 +75,22 @@ class Board
 	end
 end
 
+# class Cell
+# 	attr_accessor :value
+# 	def initialize(params = {})
+# 		@x_position = params[:x_position]
+# 		@y_position = params[:y_position]
+# 		@value = "[ ]"
+# 	end
+# end
+
 class Cell
 	attr_accessor :value
 	def initialize(params = {})
-		@x_position = params[:x_position]
-		@y_position = params[:y_position]
+		@row = params[:row]
+		@col = params[:col]
+		@diag_r = params[:diag_r]
+		@diag_l = params[:diag_l]
 		@value = "[ ]"
 	end
 end
@@ -106,10 +107,10 @@ end
 # player_two = Player.new({name: , symbol: })
 board = Board.new({board_size: 7, win_size: 4})
 board.create_cells
-# board.board.each do |row|
-# 	p row
-# 	puts
-# end
+board.board.each do |row|
+	p row
+	puts
+end
 
-p board.check_for_wins
+# p board.check_for_wins
 
